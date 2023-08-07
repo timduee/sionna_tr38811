@@ -1,0 +1,8 @@
+# Ignore everything in the root except the "tr38811" directory:
+/*
+!.gitignore
+!tr38811/
+
+# Except for the tr38811 directories:
+
+tr38811/__pycache__
