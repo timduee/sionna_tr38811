@@ -61,7 +61,7 @@ class DenseUrbanScenario(SystemLevelScenario):
         average_street_width=20.0, average_building_height=5.0,
         dtype=tf.complex64):
 
-        # Only the low-loss O2I model if available for RMa.
+        # Only the low-loss O2I model if available for dense urban.
         super().__init__(carrier_frequency, 'low', ut_array, bs_array,
             direction, enable_pathloss, enable_shadow_fading, dtype)
 
@@ -134,7 +134,12 @@ class DenseUrbanScenario(SystemLevelScenario):
     @property
     def los_parameter_filepath(self):
         r""" Path of the configuration file for LoS scenario"""
-        return 'RMa_LoS.json'
+        assert (self.carrier_frequency >= 2e9 and self.carrier_frequency <= 4e9 or self.carrier_frequency >= 26e9 and self.carrier_frequency <= 40e9) 
+        if self.carrier_frequency >= 2e9 and self.carrier_frequency <= 4e9:
+            return 'Dense_Urban_LOS_S_band.json'
+        else:
+            return 'Dense_Urban_LOS_Ka_band.json'
+            
 
     @property
     def nlos_parameter_filepath(self):
