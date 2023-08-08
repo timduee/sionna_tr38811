@@ -571,9 +571,13 @@ class SystemLevelScenario(ABC):
         if parameter_name in ('muDS', 'sigmaDS', 'muASD', 'sigmaASD', 'muASA',
                              'sigmaASA', 'muZSA', 'sigmaZSA'):
 
+            p10_los = self._params_los[parameter_name + '_10']
+            print("AAAAAAAAAAAAAAAAAAAAA", p10_los)
             pa_los = self._params_los[parameter_name + 'a']
             pb_los = self._params_los[parameter_name + 'b']
             pc_los = self._params_los[parameter_name + 'c']
+
+            
 
             pa_nlos = self._params_nlos[parameter_name + 'a']
             pb_nlos = self._params_nlos[parameter_name + 'b']

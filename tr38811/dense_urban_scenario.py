@@ -144,7 +144,11 @@ class DenseUrbanScenario(SystemLevelScenario):
     @property
     def nlos_parameter_filepath(self):
         r""" Path of the configuration file for NLoS scenario"""
-        return'RMa_NLoS.json'
+        assert (self.carrier_frequency >= 2e9 and self.carrier_frequency <= 4e9 or self.carrier_frequency >= 26e9 and self.carrier_frequency <= 40e9) 
+        if self.carrier_frequency >= 2e9 and self.carrier_frequency <= 4e9:
+            return 'Dense_Urban_NLOS_S_band.json'
+        else:
+            return 'Dense_Urban_NLOS_Ka_band.json'
 
     @property
     def o2i_parameter_filepath(self):
