@@ -6,3 +6,4 @@
 # Except for the tr38811 directories:
 
 tr38811/__pycache__
+tr38811/models/__pycache__
