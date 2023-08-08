@@ -22,3 +22,10 @@ from .uma import UMa
 from .umi import UMi
 from .tdl import TDL
 from .cdl import CDL
+
+"""
+Channel sub-package of the Sionna library implementing 3GPP TR38.811 models.
+"""
+
+from .dense_urban import DenseUrban
+from .dense_urban_scenario import DenseUrbanScenario
