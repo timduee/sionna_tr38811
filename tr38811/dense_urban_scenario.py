@@ -32,6 +32,9 @@ class DenseUrbanScenario(SystemLevelScenario):
     direction : str
         Link direction. Either "uplink" or "downlink".
 
+    elevation_angle : float
+        elevation angle of the LOS path of the satellite/HAPS vs. ground horizon in degrees
+
     enable_pathloss : bool
         If `True`, apply pathloss. Otherwise doesn't. Defaults to `True`.
 
@@ -57,13 +60,13 @@ class DenseUrbanScenario(SystemLevelScenario):
     """
 
     def __init__(self, carrier_frequency, ut_array, bs_array,
-        direction, enable_pathloss=True, enable_shadow_fading=True,
+        direction, elevation_angle, enable_pathloss=True, enable_shadow_fading=True,
         average_street_width=20.0, average_building_height=5.0,
         dtype=tf.complex64):
 
         # Only the low-loss O2I model if available for dense urban.
         super().__init__(carrier_frequency, 'low', ut_array, bs_array,
-            direction, enable_pathloss, enable_shadow_fading, dtype)
+            direction, elevation_angle, enable_pathloss, enable_shadow_fading, dtype)
 
         # Average street width [m]
         self._average_street_width = tf.constant(average_street_width,
