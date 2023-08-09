@@ -123,7 +123,9 @@ class DenseUrbanScenario(SystemLevelScenario):
         Computed following section 7.4.2 of TR 38.901.
 
         [batch size, num_ut]"""
-        los_p = self.get_param("LoS_p")
+        #can' access get_param function with los before get_sample function. Manual curcumvention
+        angle_str = str(round(self._elevation_angle/10.0)*10)
+        los_p = self._params_los["LoS_p" + '_' + angle_str]
         distance_2d_out = self._distance_2d_out
         los_probability = tf.exp(-(distance_2d_out-10.0)/1000.0)
         los_probability = tf.where(tf.math.less(distance_2d_out, 10.0),
@@ -170,7 +172,7 @@ class DenseUrbanScenario(SystemLevelScenario):
     #########################
     # Utility methods
     #########################
-
+    #needs to be adapted, TO DO
     def _compute_lsp_log_mean_std(self):
         r"""Computes the mean and standard deviations of LSPs in log-domain"""
 
@@ -198,8 +200,7 @@ class DenseUrbanScenario(SystemLevelScenario):
         # ZSA
         log_mean_zsa = self.get_param("muZSA")
         # ZSD mean is of the form max(-1, A*d2D/1000 - 0.01*(hUT-1.5) + B)
-        log_mean_zsd = (self.get_param("muZSDa")*(distance_2d/1000.)
-            - 0.01*(h_ut-1.5) + self.get_param("muZSDb"))
+        log_mean_zsd = (self.get_param("muZSD"))
         log_mean_zsd = tf.math.maximum(tf.constant(-1.0,
                                         self._dtype.real_dtype), log_mean_zsd)
 
@@ -226,7 +227,7 @@ class DenseUrbanScenario(SystemLevelScenario):
         distance_breakpoint = (2.*PI*h_bs*h_ut*self.carrier_frequency/
             SPEED_OF_LIGHT)
         log_std_sf_los=tf.where(tf.math.less(distance_2d, distance_breakpoint),
-            self.get_param("sigmaSF1")/10.0, self.get_param("sigmaSF2")/10.0)
+            self.get_param("sigmaSF")/10.0, self.get_param("sigmaSF")/10.0)
         # Use the correct SF STD according to the user scenario: NLoS/O2I, or
         # LoS
         log_std_sf = tf.where(self.los, log_std_sf_los, log_std_sf_o2i_nlos)

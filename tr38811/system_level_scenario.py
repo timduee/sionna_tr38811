@@ -106,6 +106,7 @@ class SystemLevelScenario(ABC):
         self._ut_velocities = None
         self._in_state = None
         self._requested_los = None
+        #self.
 
         # Load parameters for this scenario
         self._load_params()
@@ -347,19 +348,24 @@ class SystemLevelScenario(ABC):
     @property
     def num_clusters_los(self):
         r"""Number of clusters for LoS scenario"""
-        return self._params_los["numClusters"]
+        print("current parameters in num_clusters_los in system level scenario: ", self._params_los)
+        angle_str = str(round(self._elevation_angle/10.0)*10)
+        #parameter_value_los = self._params_los[parameter_name + '_' + angle_str]
+        return self._params_los["numClusters_" + angle_str]
 
     @property
     def num_clusters_nlos(self):
         r"""Number of clusters for NLoS scenario"""
-        return self._params_nlos["numClusters"]
+        angle_str = str(round(self._elevation_angle/10.0)*10)
+        return self._params_nlos["numClusters_" + angle_str]
 
     @property
     def num_clusters_max(self):
         r"""Maximum number of clusters over LoS and NLoS scenarios"""
         # Different models have different number of clusters
-        num_clusters_los = self._params_los["numClusters"]
-        num_clusters_nlos = self._params_nlos["numClusters"]
+        angle_str = str(round(self._elevation_angle/10.0)*10)
+        num_clusters_los = self._params_los["numClusters_" + angle_str]
+        num_clusters_nlos = self._params_nlos["numClusters_" + angle_str]
         num_clusters_max = tf.reduce_max([num_clusters_los, num_clusters_nlos])
         return num_clusters_max
 
@@ -697,7 +703,6 @@ class SystemLevelScenario(ABC):
         # pylint: disable=unspecified-encoding
         with open(source) as f:
             self._params_los = json.load(f)
-
         for param_name in self._params_los :
             v = self._params_los[param_name]
             if isinstance(v, float):
