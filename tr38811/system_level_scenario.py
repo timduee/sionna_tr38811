@@ -273,24 +273,27 @@ class SystemLevelScenario(ABC):
     def los_aod(self):
         r"""LoS azimuth angle of departure of each BS-UT link [deg].
         [batch size, number of BSs, number of UTs]"""
+        return 0.0
         return self._los_aod
 
     @property
     def los_aoa(self):
         r"""LoS azimuth angle of arrival of each BS-UT link [deg].
         [batch size, number of BSs, number of UTs]"""
+        return 0.0
         return self._los_aoa
 
     @property
     def los_zod(self):
         r"""LoS zenith angle of departure of each BS-UT link [deg].
         [batch size, number of BSs, number of UTs]"""
+        return 90.0
         return self._los_zod
-
+    #might run into issue later
     @property
     def los_zoa(self):
-        r"""LoS zenith angle of arrival of each BS-UT link [deg].
-        [batch size, number of BSs, number of UTs]"""
+        r"""considered 90 degrees"""
+        return 90.0
         return self._los_zoa
 
     @property
@@ -352,19 +355,12 @@ class SystemLevelScenario(ABC):
         return self._params_nlos["numClusters"]
 
     @property
-    def num_clusters_indoor(self):
-        r"""Number of clusters indoor scenario"""
-        return self._params_o2i["numClusters"]
-
-    @property
     def num_clusters_max(self):
-        r"""Maximum number of clusters over indoor, LoS, and NLoS scenarios"""
+        r"""Maximum number of clusters over LoS and NLoS scenarios"""
         # Different models have different number of clusters
         num_clusters_los = self._params_los["numClusters"]
         num_clusters_nlos = self._params_nlos["numClusters"]
-        num_clusters_o2i = self._params_o2i["numClusters"]
-        num_clusters_max = tf.reduce_max([num_clusters_los, num_clusters_nlos,
-            num_clusters_o2i])
+        num_clusters_max = tf.reduce_max([num_clusters_los, num_clusters_nlos])
         return num_clusters_max
 
     @property
@@ -518,12 +514,6 @@ class SystemLevelScenario(ABC):
     @abstractmethod
     def nlos_parameter_filepath(self):
         r""" Path of the configuration file for NLoS scenario"""
-        pass
-
-    @property
-    @abstractmethod
-    def o2i_parameter_filepath(self):
-        r""" Path of the configuration file for indoor scenario"""
         pass
 
     @property
@@ -696,21 +686,8 @@ class SystemLevelScenario(ABC):
         self._distance_3d_out = self.distance_3d - self._distance_3d_in
 
     def _load_params(self):
-        r"""Load the configuration files corresponding to the 3 possible states
-        of UTs: LoS, NLoS, and O2I"""
-
-        source = files(models).joinpath(self.o2i_parameter_filepath)
-        # pylint: disable=unspecified-encoding
-        with open(source) as f:
-            self._params_o2i = json.load(f)
-
-        for param_name in self._params_o2i :
-            v = self._params_o2i[param_name]
-            if isinstance(v, float):
-                self._params_o2i[param_name] = tf.constant(v,
-                                                    self._dtype.real_dtype)
-            elif isinstance(v, int):
-                self._params_o2i[param_name] = tf.constant(v, tf.int32)
+        r"""Load the configuration files corresponding to the 2 possible states
+        of UTs: LoS and NLoS"""
 
         source = files(models).joinpath(self.los_parameter_filepath)
         # pylint: disable=unspecified-encoding
