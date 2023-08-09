@@ -43,6 +43,9 @@ class SystemLevelScenario(ABC):
     direction : str
         Link direction. Either "uplink" or "downlink"
 
+    elevation_angle : float
+        elevation angle of the LOS path of the satellite/HAPS vs. ground horizon in degrees
+
     enable_pathloss : bool
         If set to `True`, apply pathloss. Otherwise, does not. Defaults to True.
 
@@ -56,7 +59,7 @@ class SystemLevelScenario(ABC):
     """
 
     def __init__(self, carrier_frequency, o2i_model, ut_array, bs_array,
-        direction, enable_pathloss=True, enable_shadow_fading=True,
+        direction, elevation_angle, enable_pathloss=True, enable_shadow_fading=True,
         dtype=tf.complex64):
 
         # Carrier frequency (Hz)
@@ -87,6 +90,9 @@ class SystemLevelScenario(ABC):
         assert direction in ("uplink", "downlink"), \
             "'direction' must be 'uplink' or 'downlink'"
         self._direction = direction
+
+        assert elevation_angle >= 10 and elevation_angle <= 90, "elevation angle must be in range [10,90]"
+        self._elevation_angle = elevation_angle
 
         # Pathloss and shadow fading
         self._enable_pathloss = enable_pathloss
@@ -128,6 +134,11 @@ class SystemLevelScenario(ABC):
     def lambda_0(self):
         r"""Wavelength [m]"""
         return self._lambda_0
+
+    @property
+    def elevation_angle(self):
+        r"""Elevation angle of the LOS path of the satellite/HAPS vs. ground horizon in degrees"""
+        return self._elevation_angle
 
     @property
     def batch_size(self):
@@ -567,53 +578,10 @@ class SystemLevelScenario(ABC):
                                             self.num_ut],
                                             dtype=self._dtype.real_dtype)
 
-        # Parameter value
-        if parameter_name in ('muDS', 'sigmaDS', 'muASD', 'sigmaASD', 'muASA',
-                             'sigmaASA', 'muZSA', 'sigmaZSA'):
-
-            p10_los = self._params_los[parameter_name + '_10']
-            print("AAAAAAAAAAAAAAAAAAAAA", p10_los)
-            pa_los = self._params_los[parameter_name + 'a']
-            pb_los = self._params_los[parameter_name + 'b']
-            pc_los = self._params_los[parameter_name + 'c']
-
-            
-
-            pa_nlos = self._params_nlos[parameter_name + 'a']
-            pb_nlos = self._params_nlos[parameter_name + 'b']
-            pc_nlos = self._params_nlos[parameter_name + 'c']
-
-            pa_o2i = self._params_o2i[parameter_name + 'a']
-            pb_o2i = self._params_o2i[parameter_name + 'b']
-            pc_o2i = self._params_o2i[parameter_name + 'c']
-
-            parameter_value_los = pa_los*log10(pb_los+fc) + pc_los
-            parameter_value_nlos = pa_nlos*log10(pb_nlos+fc) + pc_nlos
-            parameter_value_o2i = pa_o2i*log10(pb_o2i+fc) + pc_o2i
-        elif parameter_name == "cDS":
-
-            pa_los = self._params_los[parameter_name + 'a']
-            pb_los = self._params_los[parameter_name + 'b']
-            pc_los = self._params_los[parameter_name + 'c']
-
-            pa_nlos = self._params_nlos[parameter_name + 'a']
-            pb_nlos = self._params_nlos[parameter_name + 'b']
-            pc_nlos = self._params_nlos[parameter_name + 'c']
-
-            pa_o2i = self._params_o2i[parameter_name + 'a']
-            pb_o2i = self._params_o2i[parameter_name + 'b']
-            pc_o2i = self._params_o2i[parameter_name + 'c']
-
-            parameter_value_los = tf.math.maximum(pa_los,
-                pb_los - pc_los*log10(fc))
-            parameter_value_nlos = tf.math.maximum(pa_nlos,
-                pb_nlos - pc_nlos*log10(fc))
-            parameter_value_o2i = tf.math.maximum(pa_o2i,
-                pb_o2i - pc_o2i*log10(fc))
-        else:
-            parameter_value_los = self._params_los[parameter_name]
-            parameter_value_nlos = self._params_nlos[parameter_name]
-            parameter_value_o2i = self._params_o2i[parameter_name]
+        # Parameter value, rounds elevation angle to nearest table entry 
+        angle_str = str(round(self._elevation_angle/10.0)*10)
+        parameter_value_los = self._params_los[parameter_name + '_' + angle_str]
+        parameter_value_nlos = self._params_nlos[parameter_name + '_' + angle_str]
 
         # Expand to allow broadcasting with the BS dimension
         indoor = tf.expand_dims(self.indoor, axis=1)
@@ -628,11 +596,6 @@ class SystemLevelScenario(ABC):
         parameter_tensor = tf.where(
             tf.logical_and(tf.logical_not(self.los),
             tf.logical_not(indoor)), parameter_value_nlos,
-            parameter_tensor)
-        # O2I
-        parameter_value_o2i = tf.cast(parameter_value_o2i,
-                                        self._dtype.real_dtype)
-        parameter_tensor = tf.where(indoor, parameter_value_o2i,
             parameter_tensor)
 
         return parameter_tensor
