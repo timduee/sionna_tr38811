@@ -79,6 +79,9 @@ class DenseUrban(SystemLevelChannel):
     direction : str
         Link direction. Either "uplink" or "downlink".
 
+    elevation_angle : float
+        elevation angle of the LOS path of the satellite/HAPS vs. ground horizon in degrees
+
     enable_pathloss : bool
         If `True`, apply pathloss. Otherwise doesn't. Defaults to `True`.
 
@@ -121,13 +124,13 @@ class DenseUrban(SystemLevelChannel):
     """
 
     def __init__(self, carrier_frequency, ut_array, bs_array,
-        direction, enable_pathloss=True, enable_shadow_fading=True,
+        direction, elevation_angle, enable_pathloss=True, enable_shadow_fading=True,
         average_street_width=20.0, average_building_height=5.0,
         always_generate_lsp=False, dtype=tf.complex64):
 
         # dense urban scenario
         scenario = DenseUrbanScenario(carrier_frequency, ut_array, bs_array,
-            direction, enable_pathloss, enable_shadow_fading,
+            direction, elevation_angle, enable_pathloss, enable_shadow_fading,
             average_street_width, average_building_height, dtype)
 
         super().__init__(scenario, always_generate_lsp)
