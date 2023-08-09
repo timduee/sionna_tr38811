@@ -123,10 +123,12 @@ class DenseUrbanScenario(SystemLevelScenario):
         Computed following section 7.4.2 of TR 38.901.
 
         [batch size, num_ut]"""
+        los_p = self.get_param("LoS_p")
         distance_2d_out = self._distance_2d_out
         los_probability = tf.exp(-(distance_2d_out-10.0)/1000.0)
         los_probability = tf.where(tf.math.less(distance_2d_out, 10.0),
-            tf.constant(1.0, self._dtype.real_dtype), los_probability)
+            tf.constant(los_p, self._dtype.real_dtype), los_p)
+        
         return los_probability
 
     @property
@@ -138,25 +140,32 @@ class DenseUrbanScenario(SystemLevelScenario):
     def los_parameter_filepath(self):
         r""" Path of the configuration file for LoS scenario"""
         assert (self.carrier_frequency >= 2e9 and self.carrier_frequency <= 4e9 or self.carrier_frequency >= 26e9 and self.carrier_frequency <= 40e9) 
-        if self.carrier_frequency >= 2e9 and self.carrier_frequency <= 4e9:
-            return 'Dense_Urban_LOS_S_band.json'
+        if self.direction == "uplink":
+            if self.carrier_frequency >= 2e9 and self.carrier_frequency <= 4e9:
+                return 'Dense_Urban_LOS_S_band_UL.json'
+            else:
+                return 'Dense_Urban_LOS_Ka_band_UL.json'
         else:
-            return 'Dense_Urban_LOS_Ka_band.json'
+            if self.carrier_frequency >= 2e9 and self.carrier_frequency <= 4e9:
+                return 'Dense_Urban_LOS_S_band.json'
+            else:
+                return 'Dense_Urban_LOS_Ka_band.json'
             
 
     @property
     def nlos_parameter_filepath(self):
         r""" Path of the configuration file for NLoS scenario"""
         assert (self.carrier_frequency >= 2e9 and self.carrier_frequency <= 4e9 or self.carrier_frequency >= 26e9 and self.carrier_frequency <= 40e9) 
-        if self.carrier_frequency >= 2e9 and self.carrier_frequency <= 4e9:
-            return 'Dense_Urban_NLOS_S_band.json'
+        if self.direction == "uplink":
+            if self.carrier_frequency >= 2e9 and self.carrier_frequency <= 4e9:
+                return 'Dense_Urban_NLOS_S_band_UL.json'
+            else:
+                return 'Dense_Urban_NLOS_Ka_band_UL.json'
         else:
-            return 'Dense_Urban_NLOS_Ka_band.json'
-
-    @property
-    def o2i_parameter_filepath(self):
-        r""" Path of the configuration file for indoor scenario"""
-        return 'RMa_O2I.json'
+            if self.carrier_frequency >= 2e9 and self.carrier_frequency <= 4e9:
+                return 'Dense_Urban_NLOS_S_band.json'
+            else:
+                return 'Dense_Urban_NLOS_Ka_band.json'
 
     #########################
     # Utility methods
