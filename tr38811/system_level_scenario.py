@@ -569,10 +569,14 @@ class SystemLevelScenario(ABC):
                                             dtype=self._dtype.real_dtype)
 
         # Parameter value, rounds elevation angle to nearest table entry 
-        angle_str = str(round(self._elevation_angle/10.0)*10)
-        parameter_value_los = self._params_los[parameter_name + '_' + angle_str]
-        parameter_value_nlos = self._params_nlos[parameter_name + '_' + angle_str]
-
+        #is muSF missing???
+        if parameter_name not in ("CPhiNLoS", "CThetaNLoS"):
+            angle_str = str(round(self._elevation_angle/10.0)*10)
+            parameter_value_los = self._params_los[parameter_name + '_' + angle_str]
+            parameter_value_nlos = self._params_nlos[parameter_name + '_' + angle_str]
+        else:
+            parameter_value_los = self._params_los[parameter_name]
+            parameter_value_nlos = self._params_nlos[parameter_name]
         # Expand to allow broadcasting with the BS dimension
         indoor = tf.expand_dims(self.indoor, axis=1)
         # LoS
