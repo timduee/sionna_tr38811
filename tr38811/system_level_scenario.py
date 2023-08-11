@@ -266,27 +266,31 @@ class SystemLevelScenario(ABC):
     def los_aod(self):
         r"""LoS azimuth angle of departure of each BS-UT link [deg].
         [batch size, number of BSs, number of UTs]"""
-        return 0.0
+        return tf.zeros(shape=self._los_aod.shape)
         return self._los_aod
 
     @property
     def los_aoa(self):
         r"""LoS azimuth angle of arrival of each BS-UT link [deg].
         [batch size, number of BSs, number of UTs]"""
-        return 0.0
+        #considered 0
+        #print("this is los aoa in sys levl scen: ", self._los_aoa)
+        #print("so we return: ", tf.zeros(shape=self._los_aoa.shape))
+        return tf.zeros(shape=self._los_aoa.shape)
         return self._los_aoa
 
     @property
     def los_zod(self):
         r"""LoS zenith angle of departure of each BS-UT link [deg].
         [batch size, number of BSs, number of UTs]"""
-        return 90.0
+        return tf.zeros(shape=self._los_zod.shape) +90
         return self._los_zod
     #might run into issue later
     @property
     def los_zoa(self):
         r"""considered 90 degrees"""
-        return 90.0
+        #considered 90
+        return tf.zeros(shape=self._los_zoa.shape) +90
         return self._los_zoa
 
     @property
@@ -340,7 +344,7 @@ class SystemLevelScenario(ABC):
     @property
     def num_clusters_los(self):
         r"""Number of clusters for LoS scenario"""
-        print("current parameters in num_clusters_los in system level scenario: ", self._params_los)
+        #print("current parameters in num_clusters_los in system level scenario: ", self._params_los)
         angle_str = str(round(self._elevation_angle/10.0)*10)
         #parameter_value_los = self._params_los[parameter_name + '_' + angle_str]
         return self._params_los["numClusters_" + angle_str]

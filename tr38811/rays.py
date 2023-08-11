@@ -191,7 +191,9 @@ class RaysGenerator:
         scenario = self._scenario
         num_clusters_los = scenario.num_clusters_los
         num_clusters_nlos = scenario.num_clusters_nlos
-        num_clusters_o2i = scenario.num_clusters_indoor
+        #HOTFIX There is no o2i and this method will not compute anything meaningful. This is a hotfix to make the rest work
+        #num_clusters_o2i = scenario.num_clusters_indoor
+        num_clusters_o2i = num_clusters_nlos
         num_clusters_max = tf.reduce_max([num_clusters_los, num_clusters_nlos,
             num_clusters_o2i])
 
@@ -411,6 +413,8 @@ class RaysGenerator:
 
         azimuth_spread = tf.expand_dims(azimuth_spread, axis=3)
 
+        #print("The angle type is: ", angle_type)
+
         # Loading the angle spread
         if angle_type == 'aod':
             azimuth_angles_los = scenario.los_aod
@@ -419,6 +423,7 @@ class RaysGenerator:
             azimuth_angles_los = scenario.los_aoa
             cluster_angle_spread = scenario.get_param('cASA')
         # Adding cluster dimension for broadcasting
+        #print("The azimuth angle los is: ", azimuth_angles_los)
         azimuth_angles_los = tf.expand_dims(azimuth_angles_los, axis=3)
         cluster_angle_spread = tf.expand_dims(tf.expand_dims(
             cluster_angle_spread, axis=3), axis=4)
