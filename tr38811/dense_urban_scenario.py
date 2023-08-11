@@ -64,8 +64,7 @@ class DenseUrbanScenario(SystemLevelScenario):
         average_street_width=20.0, average_building_height=5.0,
         dtype=tf.complex64):
 
-        # Only the low-loss O2I model if available for dense urban.
-        super().__init__(carrier_frequency, 'low', ut_array, bs_array,
+        super().__init__(carrier_frequency, ut_array, bs_array,
             direction, elevation_angle, enable_pathloss, enable_shadow_fading, dtype)
 
         # Average street width [m]

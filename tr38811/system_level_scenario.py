@@ -30,10 +30,6 @@ class SystemLevelScenario(ABC):
     carrier_frequency : float
         Carrier frequency [Hz]
 
-    o2i_model : str
-        Outdoor to indoor (O2I) pathloss model, used for indoor UTs.
-        Either "low" or "high" (see section 7.4.3 from 38.901 specification)
-
     ut_array : PanelArray
         Panel array configuration used by UTs
 
@@ -58,7 +54,7 @@ class SystemLevelScenario(ABC):
         dtype. Defaults to `tf.complex64`.
     """
 
-    def __init__(self, carrier_frequency, o2i_model, ut_array, bs_array,
+    def __init__(self, carrier_frequency, ut_array, bs_array,
         direction, elevation_angle, enable_pathloss=True, enable_shadow_fading=True,
         dtype=tf.complex64):
 
@@ -69,10 +65,6 @@ class SystemLevelScenario(ABC):
         # Wavelength (m)
         self._lambda_0 = tf.constant(SPEED_OF_LIGHT/carrier_frequency,
             dtype.real_dtype)
-
-        # O2I model
-        assert o2i_model in ('low', 'high'), "o2i_model must be 'low' or 'high'"
-        self._o2i_model = o2i_model
 
         # UTs and BSs arrays
         assert isinstance(ut_array, PanelArray), \
@@ -521,12 +513,6 @@ class SystemLevelScenario(ABC):
     def nlos_parameter_filepath(self):
         r""" Path of the configuration file for NLoS scenario"""
         pass
-
-    @property
-    def o2i_model(self):
-        r"""O2I model used for pathloss computation of indoor UTs. Either "low"
-        or "high". See section 7.4.3 or TR 38.901."""
-        return self._o2i_model
 
     @property
     def dtype(self):
