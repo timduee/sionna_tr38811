@@ -6,6 +6,7 @@
 """3GPP TR38.811 dense urban channel scenario"""
 
 import tensorflow as tf
+import random
 
 from sionna import SPEED_OF_LIGHT, PI
 from sionna.utils import log10
@@ -253,54 +254,29 @@ class DenseUrbanScenario(SystemLevelScenario):
         self._zod_offset = zod_offset
 
     def _compute_pathloss_basic(self):
-        r"""Computes the basic component of the pathloss [dB]"""
 
+        r"""Computes the basic component of the pathloss [dB] according to TR38.811, section 6.6.2"""
+        
         distance_2d = self.distance_2d
         distance_3d = self.distance_3d
         fc = self.carrier_frequency/1e9 # Carrier frequency (GHz)
-        h_bs = self.h_bs
-        h_bs = tf.expand_dims(h_bs, axis=2) # For broadcasting
-        h_ut = self.h_ut
-        h_ut = tf.expand_dims(h_ut, axis=1) # For broadcasting
-        average_building_height = self.average_building_height
+        angle_str = str(round(self._elevation_angle/10.0)*10)
 
-        # Beak point distance
-        # For this computation, the carrifer frequency needs to be in Hz
-        distance_breakpoint = (2.*PI*h_bs*h_ut*self.carrier_frequency
-            /SPEED_OF_LIGHT)
+        
 
-        ## Basic path loss for LoS
+        fspl = 32.45 + 20*log10(fc) + 20*log10(distance_3d)
 
-        pl_1 = (20.0*log10(40.0*PI*distance_3d*fc/3.)
-            + tf.math.minimum(0.03*tf.math.pow(average_building_height,1.72),
-                10.0)*log10(distance_3d)
-            - tf.math.minimum(0.044*tf.math.pow(average_building_height,1.72),
-                14.77)
-            + 0.002*log10(average_building_height)*distance_3d)
-        pl_2 = (20.0*log10(40.0*PI*distance_breakpoint*fc/3.)
-            + tf.math.minimum(0.03*tf.math.pow(average_building_height,1.72),
-                10.0)*log10(distance_breakpoint)
-            - tf.math.minimum(0.044*tf.math.pow(average_building_height,1.72),
-                14.77)
-            + 0.002*log10(average_building_height)*distance_breakpoint
-            + 40.0*log10(distance_3d/distance_breakpoint))
-        pl_los = tf.where(tf.math.less(distance_2d, distance_breakpoint),
-            pl_1, pl_2)
+        cl = self._params_nlos["CL" + '_' + angle_str]
 
-        ## Basic pathloss for NLoS and O2I
+        sigmaSF_los = self._params_los["sigmaSF" + '_' + angle_str]
+        sigmaSF_nlos = self._params_nlos["sigmaSF" + '_' + angle_str]
 
-        pl_3 = (161.04 - 7.1*log10(self.average_street_width)
-                + 7.5*log10(average_building_height)
-                - (24.37 - 3.7*tf.square(average_building_height/h_bs))
-                *log10(h_bs)
-                + (43.42 - 3.1*log10(h_bs))*(log10(distance_3d)-3.0)
-                + 20.0*log10(fc) - (3.2*tf.square(log10(11.75*h_ut))
-                - 4.97))
-        pl_nlos = tf.math.maximum(pl_los, pl_3)
+        SF_los = tf.random.normal(shape=distance_2d.shape, mean = 0.0, stddev = sigmaSF_los)
+        SF_nlos = tf.random.normal(shape=distance_2d.shape, mean = 0.0, stddev = sigmaSF_nlos)
 
-        ## Set the basic pathloss according to UT state
+        pl_los = fspl + SF_los
+        pl_nlos = fspl + SF_nlos + cl
 
-        # LoS
         pl_b = tf.where(self.los, pl_los, pl_nlos)
 
         self._pl_b = pl_b
