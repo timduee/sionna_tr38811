@@ -116,20 +116,17 @@ class DenseUrbanScenario(SystemLevelScenario):
 
     @property
     def los_probability(self):
-        r"""Probability of each UT to be LoS. Used to randomly generate LoS
+        r"""Probability of each UT to be LoS. Used to generate LoS
         status of outdoor UTs.
 
-        Computed following section 7.4.2 of TR 38.901.
+        Taken from table 6.6.1-1 in TR38.811
 
         [batch size, num_ut]"""
-        #can' access get_param function with los before get_sample function. Manual curcumvention
+        #can' access get_param function with los before get_sample function. Manual circumvention
         angle_str = str(round(self._elevation_angle/10.0)*10)
         los_p = self._params_los["LoS_p" + '_' + angle_str]
-        distance_2d_out = self._distance_2d_out
-        los_probability = tf.exp(-(distance_2d_out-10.0)/1000.0)
-        los_probability = tf.where(tf.math.less(distance_2d_out, 10.0),
-            tf.constant(los_p, self._dtype.real_dtype), los_p)
-        
+
+        los_probability = tf.zeros(shape = self._distance_2d_out.shape) + los_p
         return los_probability
 
     @property
