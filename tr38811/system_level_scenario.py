@@ -7,6 +7,7 @@
 import json
 from importlib_resources import files
 import tensorflow as tf
+import numpy as np
 from abc import ABC, abstractmethod
 
 from sionna import SPEED_OF_LIGHT, PI
@@ -266,7 +267,12 @@ class SystemLevelScenario(ABC):
     def los_aod(self):
         r"""LoS azimuth angle of departure of each BS-UT link [deg].
         [batch size, number of BSs, number of UTs]"""
-        return tf.zeros(shape=self._los_aod.shape)
+        SF_los = tf.map_fn(fn=lambda t : 0, elems=self._los_aod)
+        #return SF_los
+        #return tf.zeros(shape=self._los_aod.shape)
+        print("this is los aod in sls: ", self._los_aod)
+        print("and this is after where: ", tf.where(tf.math.less(self._los_aod, 0.0), 0.0, 0.0))
+        return tf.where(tf.math.less(self._los_aod, 0.0), 0.0, 0.0)
         return self._los_aod
 
     @property
@@ -276,21 +282,31 @@ class SystemLevelScenario(ABC):
         #considered 0
         #print("this is los aoa in sys levl scen: ", self._los_aoa)
         #print("so we return: ", tf.zeros(shape=self._los_aoa.shape))
-        return tf.zeros(shape=self._los_aoa.shape)
+        #TO DO hotfix, make it prettier
+        SF_los = tf.map_fn(fn=lambda t : 0, elems=self._los_aoa)
+        #return SF_los
+        #return tf.zeros(shape=self._los_aoa.shape)
+        return tf.where(tf.math.less(self._los_aoa, 0.0), 0.0, 0.0)
         return self._los_aoa
 
     @property
     def los_zod(self):
         r"""LoS zenith angle of departure of each BS-UT link [deg].
         [batch size, number of BSs, number of UTs]"""
-        return tf.zeros(shape=self._los_zod.shape) +90
+        return tf.where(tf.math.less(self._los_zod, 0.0), 90.0, 90.0)
+        SF_los = tf.map_fn(fn=lambda t : 90, elems=self._los_zod)
+        #return SF_los
+        #return tf.zeros(shape=self._los_zod.shape) +90
         return self._los_zod
     #might run into issue later
     @property
     def los_zoa(self):
         r"""considered 90 degrees"""
         #considered 90
-        return tf.zeros(shape=self._los_zoa.shape) +90
+        return tf.where(tf.math.less(self._los_zoa, 0.0), 90.0, 90.0)
+        SF_los = tf.map_fn(fn=lambda t : 90, elems=self._los_zoa)
+        #return SF_los
+        #return tf.zeros(shape=self._los_zoa.shape) +90
         return self._los_zoa
 
     @property

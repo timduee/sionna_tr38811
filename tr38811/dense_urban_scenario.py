@@ -6,7 +6,7 @@
 """3GPP TR38.811 dense urban channel scenario"""
 
 import tensorflow as tf
-import random
+import numpy as np
 
 from sionna import SPEED_OF_LIGHT, PI
 from sionna.utils import log10
@@ -124,10 +124,18 @@ class DenseUrbanScenario(SystemLevelScenario):
 
         [batch size, num_ut]"""
         #can' access get_param function with los before get_sample function. Manual circumvention
+        #TO DO, this is currently a  Hotfix only taking the shape of previous calculation here, getting the shape in a prettier fashion in the future
         angle_str = str(round(self._elevation_angle/10.0)*10)
         los_p = self._params_los["LoS_p" + '_' + angle_str]
 
-        los_probability = tf.zeros(shape = self._distance_2d_out.shape) + los_p
+        #print("shape of loc ins dus: ", self._ut_loc.shape)
+
+        distance_2d_out = self._distance_2d_out
+        #los_probability = tf.exp(-(distance_2d_out-10.0)/1000.0)
+        los_probability = tf.where(tf.math.less(distance_2d_out, 10.0),
+            tf.constant(los_p, self._dtype.real_dtype), tf.constant(los_p, self._dtype.real_dtype))
+
+        #los_probability = tf.zeros(shape = los_probability.shape) + los_p
         return los_probability
 
     @property
@@ -259,24 +267,42 @@ class DenseUrbanScenario(SystemLevelScenario):
         
         distance_2d = self.distance_2d
         distance_3d = self.distance_3d
+        print("distance 3d shape in dus: ", distance_3d.shape)
         fc = self.carrier_frequency/1e9 # Carrier frequency (GHz)
         angle_str = str(round(self._elevation_angle/10.0)*10)
 
         
 
         fspl = 32.45 + 20*log10(fc) + 20*log10(distance_3d)
-
+        #print("this is fspl: ", fspl, " with shape ", fspl.shape)
         cl = self._params_nlos["CL" + '_' + angle_str]
 
         sigmaSF_los = self._params_los["sigmaSF" + '_' + angle_str]
         sigmaSF_nlos = self._params_nlos["sigmaSF" + '_' + angle_str]
 
-        SF_los = tf.random.normal(shape=distance_2d.shape, mean = 0.0, stddev = sigmaSF_los)
-        SF_nlos = tf.random.normal(shape=distance_2d.shape, mean = 0.0, stddev = sigmaSF_nlos)
+
+        #TO DO this is a Hotfix and needs to be made prettier soon
+        #as tf.random.normal cannot handle the None value of the first dimension of pl_b, this will be replaced by a manual override
+        #SF_los = tf.random.normal(shape=(distance_2d.shape[1],distance_2d.shape[2]), mean = 0.0, stddev = sigmaSF_los)
+        #SF_nlos = tf.random.normal(shape=(distance_2d.shape[1],distance_2d.shape[2]), mean = 0.0, stddev = sigmaSF_nlos)
+
+        #SF_los = tf.reshape(SF_los, shape = (None, SF_los.shape[0], SF_los.shape[1]))
+        #SF_nlos = tf.reshape(SF_nlos, shape = (None, SF_los.shape[0], SF_los.shape[1]))
+
+        #SF_los = tf.map_fn(fn=lambda t : np.random.normal(loc = 0.0, scale = sigmaSF_los), elems=fspl)
+        #SF_nlos = tf.map_fn(fn=lambda t : np.random.normal(loc = 0.0, scale = sigmaSF_nlos), elems=fspl)
+        #tf.map_fn(fn=lambda t: myOp(t), elems=elems)
+        #SF_los = [random.normal(mean = 0.0, loc = sigmaSF_los) for d in distance_2d]
+        #SF_nlos = [random.normal(mean = 0.0, loc = sigmaSF_nlos) for d in distance_2d]
+        #TO DO Hotfix, ugly bit works for now
+        SF_los = tf.where(self.los, np.random.normal(loc = 0.0, scale = sigmaSF_los), np.random.normal(loc = 0.0, scale = sigmaSF_los))
+        SF_nlos = tf.where(self.los, np.random.normal(loc = 0.0, scale = sigmaSF_nlos), np.random.normal(loc = 0.0, scale = sigmaSF_nlos))
 
         pl_los = fspl + SF_los
         pl_nlos = fspl + SF_nlos + cl
-
+        
         pl_b = tf.where(self.los, pl_los, pl_nlos)
-
+        print("from dus 811:")
+        print("pl_d: ", pl_b)
+        print("SF_los: ", SF_los)
         self._pl_b = pl_b
