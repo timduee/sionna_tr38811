@@ -54,6 +54,7 @@ class SystemLevelChannel(ChannelModel):
 
         self._scenario = scenario
         self._lsp_sampler = LSPGenerator(scenario)
+        print("the smapler is: ", self._lsp_sampler)
         self._ray_sampler = RaysGenerator(scenario)
         self._set_topology_called = False
 
