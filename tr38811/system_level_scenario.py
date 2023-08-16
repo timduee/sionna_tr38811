@@ -270,8 +270,8 @@ class SystemLevelScenario(ABC):
         SF_los = tf.map_fn(fn=lambda t : 0, elems=self._los_aod)
         #return SF_los
         #return tf.zeros(shape=self._los_aod.shape)
-        print("this is los aod in sls: ", self._los_aod)
-        print("and this is after where: ", tf.where(tf.math.less(self._los_aod, 0.0), 0.0, 0.0))
+        #print("this is los aod in sls: ", self._los_aod)
+        #print("and this is after where: ", tf.where(tf.math.less(self._los_aod, 0.0), 0.0, 0.0))
         return tf.where(tf.math.less(self._los_aod, 0.0), 0.0, 0.0)
         return self._los_aod
 
@@ -591,18 +591,24 @@ class SystemLevelScenario(ABC):
             parameter_value_nlos = self._params_nlos[parameter_name]
         # Expand to allow broadcasting with the BS dimension
         indoor = tf.expand_dims(self.indoor, axis=1)
+        #print("in los811 value is: ", parameter_name, " ", parameter_value_los)
+        #print("in nlos811 value is: ", parameter_name, " ", parameter_value_nlos)
+        #print("indoor in 811: ", indoor)
         # LoS
         parameter_value_los = tf.cast(parameter_value_los,
                                         self._dtype.real_dtype)
-        parameter_tensor = tf.where(self.los, parameter_value_los,
-            parameter_tensor)
+        #parameter_tensor = tf.where(self.los, parameter_value_los,
+        #    parameter_tensor)
         # NLoS
         parameter_value_nlos = tf.cast(parameter_value_nlos,
                                         self._dtype.real_dtype)
-        parameter_tensor = tf.where(
-            tf.logical_and(tf.logical_not(self.los),
-            tf.logical_not(indoor)), parameter_value_nlos,
-            parameter_tensor)
+        #parameter_tensor = tf.where(
+        #    tf.logical_and(tf.logical_not(self.los),
+        #    tf.logical_not(indoor)), parameter_value_nlos,
+        #    parameter_tensor)
+        
+        parameter_tensor = tf.where(self.los, parameter_value_los,
+            parameter_value_nlos)
 
         return parameter_tensor
 

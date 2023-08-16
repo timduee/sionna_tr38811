@@ -194,7 +194,7 @@ class SystemLevelChannel(ChannelModel):
 
         # The channel coefficient needs the cluster delay spread parameter in ns
         c_ds = self._scenario.get_param("cDS")*1e-9
-
+        #print("this is what cds is in slc: ", c_ds)
         # According to the link direction, we need to specify which from BS
         # and UT is uplink, and which is downlink.
         # Default is downlink, so we need to do some tranpose to switch tx and
@@ -234,7 +234,14 @@ class SystemLevelChannel(ChannelModel):
         # pylint: disable=unbalanced-tuple-unpacking
         h, delays = self._cir_sampler(num_time_samples, sampling_frequency,
                                       k_factor, rays, topology, c_ds)
-
+        #print("in slc: k_factor", k_factor)
+        #print("in slc: lsp.k_factor", lsp.k_factor)
+        #print("in slc: num_time_samples", num_time_samples)
+        ##print("in slc: sampling_frequency", sampling_frequency)
+        #print("in slc: k_factor", k_factor)
+        #print("in slc: rays", rays)
+        #print("in slc: topology", topology)
+        #print("in slc: c_ds", c_ds)
         # Step 12
         h = self._step_12(h, sf)
 
@@ -245,7 +252,7 @@ class SystemLevelChannel(ChannelModel):
         # Stop gadients to avoid useless backpropagation
         h = tf.stop_gradient(h)
         delays = tf.stop_gradient(delays)
-
+        
         return h, delays
 
     def show_topology(self, bs_index=0, batch_index=0):

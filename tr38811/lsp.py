@@ -122,23 +122,27 @@ class LSPGenerator:
         s = tf.random.normal(shape=[self._scenario.batch_size,
             self._scenario.num_bs, self._scenario.num_ut, 7],
             dtype=self._scenario.dtype.real_dtype)
-
+        
         ## Applyting cross-LSP correlation
         s = tf.expand_dims(s, axis=4)
         s = self._cross_lsp_correlation_matrix_sqrt@s
         s = tf.squeeze(s, axis=4)
-
+        #print("811 s: ", s)
         ## Applying spatial correlation
-        s = tf.expand_dims(tf.transpose(s, [0, 1, 3, 2]), axis=3)
+        s = tf.expand_dims(tf.transpose(s, [0, 1, 3, 2]), axis=3) 
+        #print("811 s: ", s)
         s = tf.matmul(s, self._spatial_lsp_correlation_matrix_sqrt,
-                      transpose_b=True)
+                      transpose_b=True)#here is the problem
+        #print("811 s: ", s)
+        #print("811 _spatial_lsp_correlation_matrix_sqrt: ", self._spatial_lsp_correlation_matrix_sqrt)
         s = tf.transpose(tf.squeeze(s, axis=3), [0, 1, 3, 2])
-
+        #print("811 s: ", s)
         ## Scaling and transposing LSPs to the right mean and variance
         lsp_log_mean = self._scenario.lsp_log_mean
         lsp_log_std = self._scenario.lsp_log_std
         lsp_log = lsp_log_std*s + lsp_log_mean
-
+        #print("811 std: ", lsp_log_std)
+        #print("811 mu: ", lsp_log_mean)
         ## Mapping to linear domain
         lsp = tf.math.pow(tf.constant(10., self._scenario.dtype.real_dtype),
             lsp_log)
@@ -155,6 +159,13 @@ class LSPGenerator:
                     zsa       = tf.math.minimum(lsp[:,:,:,5], 52.0),
                     zsd       = tf.math.minimum(lsp[:,:,:,6], 52.0)
                     )
+        #print("811 ds: ", lsp.ds)
+        #print("811 asd: ", lsp.asd)
+        #print("811 asa: ", lsp.asa)
+        #print("811 sf: ", lsp.sf)
+        #print("811 k_factor: ", lsp.k_factor)
+        #print("811 zsa: ", lsp.zsa)
+        #print("811 zsd: ", lsp.zsd)
 
         return lsp
 
@@ -357,6 +368,7 @@ class LSPGenerator:
                 self._scenario.num_ut, batch_shape=[self._scenario.batch_size,
                 self._scenario.num_bs], dtype=self._scenario.dtype.real_dtype)
             distance_scaling_matrix = self._scenario.get_param(parameter_name)
+            #print("distance scaling param in 811 is: ", self._scenario.get_param(parameter_name))
             distance_scaling_matrix = tf.tile(tf.expand_dims(
                 distance_scaling_matrix, axis=3),
                 [1, 1, 1, self._scenario.num_ut])
@@ -376,6 +388,7 @@ class LSPGenerator:
             # Stacking
             filtering_matrices.append(filtering_matrix)
             distance_scaling_matrices.append(distance_scaling_matrix)
+            #print("yes, its going in in 811 with param: ", parameter_name)
         filtering_matrices = tf.stack(filtering_matrices, axis=2)
         distance_scaling_matrices = tf.stack(distance_scaling_matrices, axis=2)
 
@@ -385,11 +398,16 @@ class LSPGenerator:
 
         # Correlation matrix
         spatial_lsp_correlation = (tf.math.exp(
-            ut_dist_2d*distance_scaling_matrices)*filtering_matrices)
-
+            ut_dist_2d*distance_scaling_matrices)*filtering_matrices)#here is the problem, distance_scaling_matrices includes -inf
+        #print("811 ut_dist_2d: ", ut_dist_2d)
+        #print("811 distance_scaling_matrices: ", distance_scaling_matrices)
+        #print("811 filtering_matrices: ", filtering_matrices)
         # Compute and store the square root of the spatial correlation matrix
         self._spatial_lsp_correlation_matrix_sqrt = matrix_sqrt(
                 spatial_lsp_correlation)
+        #print("811 spatial_lsp_correlation: ", spatial_lsp_correlation)
+        #print("811 self._spatial_lsp_correlation_matrix_sqrt: ", self._spatial_lsp_correlation_matrix_sqrt)
+
 
     def _o2i_low_loss(self):
         """

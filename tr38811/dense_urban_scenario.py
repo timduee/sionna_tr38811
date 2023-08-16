@@ -267,7 +267,7 @@ class DenseUrbanScenario(SystemLevelScenario):
         
         distance_2d = self.distance_2d
         distance_3d = self.distance_3d
-        print("distance 3d shape in dus: ", distance_3d.shape)
+        #print("distance 3d shape in dus: ", distance_3d.shape)
         fc = self.carrier_frequency/1e9 # Carrier frequency (GHz)
         angle_str = str(round(self._elevation_angle/10.0)*10)
 
@@ -294,7 +294,7 @@ class DenseUrbanScenario(SystemLevelScenario):
         #tf.map_fn(fn=lambda t: myOp(t), elems=elems)
         #SF_los = [random.normal(mean = 0.0, loc = sigmaSF_los) for d in distance_2d]
         #SF_nlos = [random.normal(mean = 0.0, loc = sigmaSF_nlos) for d in distance_2d]
-        #TO DO Hotfix, ugly bit works for now
+        #TO DO Hotfix, seems to only output the same value for the random function evytime, replace in the future
         SF_los = tf.where(self.los, np.random.normal(loc = 0.0, scale = sigmaSF_los), np.random.normal(loc = 0.0, scale = sigmaSF_los))
         SF_nlos = tf.where(self.los, np.random.normal(loc = 0.0, scale = sigmaSF_nlos), np.random.normal(loc = 0.0, scale = sigmaSF_nlos))
 
@@ -302,7 +302,8 @@ class DenseUrbanScenario(SystemLevelScenario):
         pl_nlos = fspl + SF_nlos + cl
         
         pl_b = tf.where(self.los, pl_los, pl_nlos)
-        print("from dus 811:")
-        print("pl_d: ", pl_b)
-        print("SF_los: ", SF_los)
+        #print("from dus 811:")
+        ##print("pl_d: ", pl_b)
+        #print("SF_los: ", SF_los)
+        #print("SF_nlos: ", SF_nlos)
         self._pl_b = pl_b
