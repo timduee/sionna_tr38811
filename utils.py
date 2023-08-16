@@ -620,7 +620,7 @@ def set_3gpp_scenario_parameters(   scenario,
     If a parameter is given, then it is returned. If it is set to `None`,
     then a parameter valid according to the chosen scenario is returned
     (see [TR38901]_).
-
+    #TO DO, adapt for 811
     Input
     --------
     scenario : str
