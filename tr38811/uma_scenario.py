@@ -277,7 +277,7 @@ class UMaScenario(SystemLevelScenario):
 
         # Expand to allow broadcasting with the BS dimension
         # LoS
-        print("this is los shape in umas: ", self.los)
+        #print("this is los shape in umas: ", self.los)
         pl_b = tf.where(self.los, pl_los, pl_nlos)
 
         self._pl_b = pl_b
