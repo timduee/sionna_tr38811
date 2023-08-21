@@ -168,6 +168,19 @@ class AntennaElement:
         bessel = sc.special.j1(ka * np.sin(theta))
         return tf.where(theta == 0, 1, 4 * tf.abs(bessel / (ka * np.sin(theta))) ** 2)
 
+    #TODO include assumptions and assert correct values, including maximum gain of 5dBi
+    def _radiation_pattern_co_phased_DLp(self, theta, phi):
+        """
+        Radiation pattern from R1-1802551, "UE antenna assumption and beam modelling for NTN", Nokia, 3GPP TSG RAN WG1 Meeting #92, Athens, Greece, February 20th – March 2nd, 2018. 
+        Downloadlink: https://www.3gpp.org/ftp/TSG_RAN/WG1_RL1/TSGR1_92/Docs/R1-1802551.zip
+        """
+        theta_3db = 90
+        SLAv = 25
+        phi_3db = 90
+        Am = 25
+        A_EV = -np.min(12 * (theta - 90 / theta_3db), SLAv)
+        A_EH = -np.min(12 * (phi/phi_3db) ** 2, Am)
+        return tf.where(-(A_EV + A_EH) < Am, -(A_EV + A_EH), Am)
 
     def _compute_gain(self):
         """
