@@ -8,6 +8,7 @@ import tensorflow as tf
 from tensorflow import sin, cos, sqrt
 
 import numpy as np
+import scipy as sc
 
 import matplotlib.pyplot as plt
 from matplotlib.markers import MarkerStyle
@@ -149,6 +150,24 @@ class AntennaElement:
         a_h = -tf.minimum(12*(phi/phi_3db)**2, a_max)
         a_db = -tf.minimum(-(a_v + a_h), a_max) + g_e_max
         return 10**(a_db/10)
+    
+    def _radiation_pattern_circular_aperture(self, theta, a = 10):
+        """
+        Radiation pattern from TR38.811 (Section 6.4.1)
+
+        Inputs
+        -------
+        theta:
+            Zenith angle wrapped within (0,pi) [radian]
+
+        f_c:
+            Radius of antennas circular aperture 
+        """
+        #TODO check why this is too high with Amin
+        ka = a * 2 * np.pi
+        bessel = sc.special.j1(ka * np.sin(theta))
+        return tf.where(theta == 0, 1, 4 * tf.abs(bessel / (ka * np.sin(theta))) ** 2)
+
 
     def _compute_gain(self):
         """
