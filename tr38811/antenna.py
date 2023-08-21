@@ -117,6 +117,7 @@ class AntennaElement:
     ###############################
 
     # pylint: disable=unused-argument
+    #TODO is this also 38.811 6.4.2 bullet point 1? And which one is the third bullet point?
     def _radiation_pattern_omni(self, theta, phi):
         """
         Radiation pattern of an omnidirectional 3D radiation pattern
