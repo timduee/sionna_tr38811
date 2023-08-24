@@ -721,7 +721,10 @@ class SystemLevelScenario(ABC):
                 self._params_los[param_name] = tf.constant(v,
                                                     self._dtype.real_dtype)
             elif isinstance(v, int):
-                self._params_los[param_name] = tf.constant(v, tf.int32)
+                self._params_los[param_name] = tf.constant(v, 
+                                                    tf.int32)
+            elif isinstance(v, str):
+                self._params_los[param_name] = tf.constant(float(v), self._dtype.real_dtype)
 
         source = files(models).joinpath(self.nlos_parameter_filepath)
         # pylint: disable=unspecified-encoding
@@ -734,7 +737,10 @@ class SystemLevelScenario(ABC):
                 self._params_nlos[param_name] = tf.constant(v,
                                                         self._dtype.real_dtype)
             elif isinstance(v, int):
-                self._params_nlos[param_name] = tf.constant(v, tf.int32)
+                self._params_nlos[param_name] = tf.constant(v,
+                                                        tf.int32)
+            elif isinstance(v, str):
+                self._params_los[param_name] = tf.constant(float(v), self._dtype.real_dtype)
 
     @abstractmethod
     def _compute_lsp_log_mean_std(self):
