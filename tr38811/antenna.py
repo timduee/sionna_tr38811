@@ -164,10 +164,9 @@ class AntennaElement:
         f_c:
             Radius of antennas circular aperture 
         """
-        #TODO check why this is too high with Amin
         ka = a * 2 * np.pi
         bessel = sc.special.j1(ka * np.sin(theta))
-        return tf.where(theta == 0, 1, 4 * tf.abs(bessel / (ka * np.sin(theta))) ** 2)
+        return np.where(0 == theta, 1, 4 * np.abs(bessel / (ka * np.sin(theta))) ** 2)
 
     #TODO include assumptions and assert correct values, including maximum gain of 5dBi
     def _radiation_pattern_co_phased_DLp(self, theta, phi):
