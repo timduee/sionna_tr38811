@@ -1,7 +1,7 @@
 #taken from https://github.com/NVlabs/sionna/blob/main/examples/Realistic_Multiuser_MIMO_Simulations.ipynb
 
-#import drjit
-#from drjit.llvm import Float, UInt32, Array3f, Array2f, TensorXf, Texture3f, PCG32, Loop
+import drjit
+from drjit.llvm import Float, UInt32, Array3f, Array2f, TensorXf, Texture3f, PCG32, Loop
 
 import os
 gpu_num = 0 # Use "" to use the CPU
