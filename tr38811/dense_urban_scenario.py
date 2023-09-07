@@ -124,7 +124,7 @@ class DenseUrbanScenario(SystemLevelScenario):
 
         [batch size, num_ut]"""
         #can' access get_param function with los before get_sample function. Manual circumvention
-        #TO DO, this is currently a  Hotfix only taking the shape of previous calculation here, getting the shape in a prettier fashion in the future
+        #TODO, this is currently a  Hotfix only taking the shape of previous calculation here, getting the shape in a prettier fashion in the future
         angle_str = str(round(self._elevation_angle/10.0)*10)
         los_p = self._params_los["LoS_p" + '_' + angle_str]
 
@@ -177,7 +177,7 @@ class DenseUrbanScenario(SystemLevelScenario):
     #########################
     # Utility methods
     #########################
-    #needs to be adapted, TO DO
+    #needs to be adapted, TODO
     def _compute_lsp_log_mean_std(self):
         r"""Computes the mean and standard deviations of LSPs in log-domain"""
 
@@ -281,7 +281,7 @@ class DenseUrbanScenario(SystemLevelScenario):
         sigmaSF_nlos = self._params_nlos["sigmaSF" + '_' + angle_str]
 
 
-        #TO DO this is a Hotfix and needs to be made prettier soon
+        #TODO this is a Hotfix and needs to be made prettier soon
         #as tf.random.normal cannot handle the None value of the first dimension of pl_b, this will be replaced by a manual override
         #SF_los = tf.random.normal(shape=(distance_2d.shape[1],distance_2d.shape[2]), mean = 0.0, stddev = sigmaSF_los)
         #SF_nlos = tf.random.normal(shape=(distance_2d.shape[1],distance_2d.shape[2]), mean = 0.0, stddev = sigmaSF_nlos)
@@ -294,7 +294,7 @@ class DenseUrbanScenario(SystemLevelScenario):
         #tf.map_fn(fn=lambda t: myOp(t), elems=elems)
         #SF_los = [random.normal(mean = 0.0, loc = sigmaSF_los) for d in distance_2d]
         #SF_nlos = [random.normal(mean = 0.0, loc = sigmaSF_nlos) for d in distance_2d]
-        #TO DO Hotfix, seems to only output the same value for the random function evytime, replace in the future
+        #TODO Hotfix, seems to only output the same value for the random function evytime, replace in the future
         SF_los = tf.where(self.los, np.random.normal(loc = 0.0, scale = sigmaSF_los), np.random.normal(loc = 0.0, scale = sigmaSF_los))
         SF_nlos = tf.where(self.los, np.random.normal(loc = 0.0, scale = sigmaSF_nlos), np.random.normal(loc = 0.0, scale = sigmaSF_nlos))
 
